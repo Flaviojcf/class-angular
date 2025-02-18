@@ -1,9 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup, NonNullableFormBuilder } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 import { Restaurant } from '../../interfaces/restaurant/restaurant';
-import { RestaurantService, ResponseData } from '../../services/restaurant/restaurant.service';
+import { City, ResponseData, RestaurantService, State } from '../../services/restaurant/restaurant.service';
 
-export interface Data {
-  value: Restaurant[];
+
+export interface Data<T> {
+  value: T[];
   isPending: boolean;
 }
 
@@ -13,19 +16,126 @@ export interface Data {
   templateUrl: './restaurant.component.html',
   styleUrl: './restaurant.component.css',
 })
-export class RestaurantComponent implements OnInit {
-  restaurants: Data = {
+export class RestaurantComponent implements OnInit, OnDestroy {
+   formBuilder = inject(NonNullableFormBuilder);
+  form: FormGroup<{
+    state: FormControl<string>;
+    city: FormControl<string>;
+  }> = this.createForm();
+
+  restaurants: Data<Restaurant> = {
     value: [],
     isPending: false,
   };
 
-  constructor(private restaurantService: RestaurantService) {}
+  states: Data<State> = {
+    isPending: false,
+    value: [],
+  };
+
+  cities: Data<City> = {
+    isPending: false,
+    value: [],
+  };
+
+  private onDestroy$ = new Subject<void>();
+
+  constructor(
+    private restaurantService: RestaurantService,
+  ) {}
 
   ngOnInit(): void {
-    this.restaurants.isPending = true;
-    this.restaurantService.getRestaurants().subscribe((res: ResponseData) => {
-      this.restaurants.value = res.data;
-      this.restaurants.isPending = false;
+    this.getStates();
+    this.onChanges();
+  }
+
+  ngOnDestroy(): void {
+    this.onDestroy$.next();
+    this.onDestroy$.complete();
+  }
+
+  createForm(): FormGroup<{
+    state: FormControl<string>;
+    city: FormControl<string>;
+  }> {
+    return this.formBuilder.group({
+      state: { value: '', disabled: true },
+      city: { value: '', disabled: true },
     });
+  }
+
+  onChanges(): void {
+    let state: string = this.form.controls.state.value;
+
+    this.form.controls.state.valueChanges
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe((value) => {
+        this.restaurants.value = [];
+        if (value) {
+          // only enable city if state has value
+          this.form.controls.city.enable({
+            emitEvent: false,
+          });
+
+          // if state has a value and has changed, clear previous city value
+          if (state !== value) {
+            this.form.controls.city.setValue('');
+          }
+
+          // fetch cities based on state value
+          this.getCities(value);
+        } else {
+          // disable city if no value
+          this.form.controls.city.disable({
+            emitEvent: false,
+          });
+        }
+        state = value;
+      });
+
+      this.form.controls.city.valueChanges
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(cityName => {
+        if (cityName) {
+          this.getRestaurants(state, cityName);
+        }
+      });
+  }
+
+  getStates(): void {
+    this.states.isPending = true;
+    this.restaurantService
+      .getStates()
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe((res: ResponseData<State>) => {
+        this.states.value = res.data;
+        this.states.isPending = false;
+        this.form.controls.state.enable();
+      });
+  }
+
+  getCities(state: string): void {
+    this.cities.isPending = true;
+    this.restaurantService
+      .getCities(state)
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe((res: ResponseData<City>) => {
+        this.cities.value = res.data;
+        this.cities.isPending = false;
+        this.form.controls.city.enable({
+          emitEvent: false,
+        });
+      });
+  }
+
+  getRestaurants(state: string, city: string): void {
+    this.restaurants.isPending = true;
+    this.restaurantService
+      .getRestaurants(state, city)
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe((res: ResponseData<Restaurant>) => {
+        this.restaurants.value = res.data;
+        this.restaurants.isPending = false;
+      });
   }
 }

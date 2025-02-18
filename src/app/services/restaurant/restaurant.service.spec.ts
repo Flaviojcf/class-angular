@@ -3,7 +3,12 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ResponseData, RestaurantService } from './restaurant.service';
+import {
+  City,
+  ResponseData,
+  RestaurantService,
+  State,
+} from './restaurant.service';
 import { Restaurant } from '../../interfaces/restaurant/restaurant';
 
 describe('RestaurantService', () => {
@@ -87,9 +92,11 @@ describe('RestaurantService', () => {
       ],
     };
 
-    service.getRestaurants().subscribe((restaurants: ResponseData) => {
-      expect(restaurants).toEqual(mockRestaurants);
-    });
+    service
+      .getRestaurants()
+      .subscribe((restaurants: ResponseData<Restaurant>) => {
+        expect(restaurants).toEqual(mockRestaurants);
+      });
 
     const url = 'http://localhost:7070/restaurants';
     const req = httpTestingController.expectOne(url);
@@ -131,5 +138,40 @@ describe('RestaurantService', () => {
     };
     // will error if interface isn’t implemented correctly
     expect(true).toBe(true);
+  });
+
+  it('should make a GET request to states', () => {
+    const mockStates = {
+      data: [{ name: 'Missouri', short: 'MO' }],
+    };
+
+    service.getStates().subscribe((states: ResponseData<State>) => {
+      expect(states).toEqual(mockStates);
+    });
+
+    const url = 'http://localhost:7070/states';
+    const req = httpTestingController.expectOne(url);
+
+    expect(req.request.method).toEqual('GET');
+    req.flush(mockStates);
+
+    httpTestingController.verify();
+  });
+
+  it('should make a GET request to cities', () => {
+    const mockCities = {
+      data: [{ name: 'Kansas City', state: 'MO' }],
+    };
+
+    service.getCities('MO').subscribe((cities: ResponseData<City>) => {
+      expect(cities).toEqual(mockCities);
+    });
+
+    const url = 'http://localhost:7070/cities?state=MO';
+    const req = httpTestingController.expectOne(url);
+    expect(req.request.method).toEqual('GET');
+    req.flush(mockCities);
+
+    httpTestingController.verify();
   });
 });
