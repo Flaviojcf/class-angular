@@ -20,4 +20,21 @@ describe('HomeComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should render title in a h1 tag', () => {
+    const fixture = TestBed.createComponent(HomeComponent);
+    fixture.detectChanges();
+    const compiled = fixture.debugElement.nativeElement;
+    expect(compiled.querySelector('h1').textContent).toContain(
+      'Ordering food has never been easier'
+    );
+  });
+
+  it('should have a member "title" on the component', () => {
+    const fixture = TestBed.createComponent(HomeComponent);
+    fixture.detectChanges();
+    expect((fixture.componentInstance as any).title).toContain(
+      'Ordering food has never been easier'
+    );
+  });
 });
