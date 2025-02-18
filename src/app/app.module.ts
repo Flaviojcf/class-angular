@@ -1,3 +1,4 @@
+import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
@@ -17,7 +18,8 @@ import { ImageUrlPipe } from './pipes/image-url.pipe';
   imports: [
     BrowserModule,
     AppRoutingModule,
-],
+    HttpClientModule,
+  ],
   providers: [],
   bootstrap: [AppComponent]
 })
