@@ -8,12 +8,14 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
 import { RestaurantComponent } from './components/restaurant/restaurant.component';
+import { DetailComponent } from './components/restaurant/detail/detail.component';
 import { ImageUrlPipe } from './pipes/image-url.pipe';
 import { RestaurantService } from './services/restaurant/restaurant.service';
 
@@ -195,18 +197,23 @@ describe('AppComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppRoutingModule, HttpClientModule],
+      imports: [AppRoutingModule, HttpClientModule, ReactiveFormsModule],
       declarations: [
         AppComponent,
         HomeComponent,
         RestaurantComponent,
         ImageUrlPipe,
+        DetailComponent,
       ],
       providers: [
         { provide: RestaurantService, useClass: MockRestaurantService },
       ],
       schemas: [NO_ERRORS_SCHEMA],
-    }).compileComponents();
+    })
+      .overrideComponent(RestaurantComponent, {
+        set: { template: '<p>I am a fake restaurant component</p>' },
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(AppComponent);
     location = TestBed.inject(Location);
@@ -246,6 +253,15 @@ describe('AppComponent', () => {
     router.navigate(['restaurants']).then(() => {
       expect(location.path()).toBe('/restaurants');
       expect(compiled.querySelector('pmo-restaurant')).not.toBe(null);
+    });
+  }));
+
+  it('should render the DetailComponent with router navigates to "/restaurants/slug" path', fakeAsync(() => {
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    router.navigate(['restaurants/crab-shack']).then(() => {
+      expect(location.path()).toBe('/restaurants/crab-shack');
+      expect(compiled.querySelector('pmo-detail')).not.toBe(null);
     });
   }));
 

@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup, NonNullableFormBuilder } from '@angular/forms';
 import {
   combineLatest,
   map,
@@ -31,10 +31,12 @@ const toData = map(
 
 @Component({
   selector: 'pmo-restaurant',
+  standalone: false,
   templateUrl: './restaurant.component.html',
   styleUrl: './restaurant.component.css',
 })
 export class RestaurantComponent implements OnInit, OnDestroy {
+  formBuilder = inject(NonNullableFormBuilder);
   form: FormGroup<{
     state: FormControl<string>;
     city: FormControl<string>;
@@ -52,8 +54,7 @@ export class RestaurantComponent implements OnInit, OnDestroy {
   private onDestroy$ = new Subject<void>();
 
   constructor(
-    private restaurantService: RestaurantService,
-    private fb: FormBuilder
+    private restaurantService: RestaurantService  
   ) {
     this.selectedState$ = this.form.controls.state.valueChanges.pipe(
       startWith('')
@@ -151,7 +152,7 @@ export class RestaurantComponent implements OnInit, OnDestroy {
     state: FormControl<string>;
     city: FormControl<string>;
   }> {
-    return this.fb.nonNullable.group({
+    return this.formBuilder.group({
       state: { value: '', disabled: true },
       city: { value: '', disabled: true },
     });

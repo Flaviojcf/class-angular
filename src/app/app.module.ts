@@ -7,14 +7,17 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ImageUrlPipe } from './pipes/image-url.pipe';
 import { HomeComponent } from './components/home/home.component';
+import { DetailComponent } from './components/restaurant/detail/detail.component';
 import { RestaurantComponent } from './components/restaurant/restaurant.component';
+
 
 @NgModule({
   declarations: [
     AppComponent,
     HomeComponent,
     RestaurantComponent,
-    ImageUrlPipe
+    ImageUrlPipe,
+    DetailComponent
   ],
   imports: [
     BrowserModule,
