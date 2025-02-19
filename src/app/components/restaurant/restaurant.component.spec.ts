@@ -6,10 +6,12 @@ import {
 } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
+import { delay, of } from 'rxjs';
+import { Data, RestaurantComponent } from './restaurant.component';
+import { City, RestaurantService, State } from '../../services/restaurant/restaurant.service';
 import { ImageUrlPipe } from '../../pipes/image-url.pipe';
-import { RestaurantService } from '../../services/restaurant/restaurant.service';
-import { RestaurantComponent } from './restaurant.component';
+import { Restaurant } from '../../interfaces/restaurant/restaurant';
+
 
 const restaurantAPIResponse = {
   data: [
@@ -194,6 +196,12 @@ describe('RestaurantComponent', () => {
     const fixture = TestBed.createComponent(RestaurantComponent);
     fixture.detectChanges();
     tick();
+
+    let restaurantOutput!: Data<Restaurant>;
+
+    fixture.componentInstance.restaurants$.subscribe(
+      (restaurants) => (restaurantOutput = restaurants)
+    );
     fixture.componentInstance.form.get('state')?.patchValue('CA');
     fixture.componentInstance.form.get('city')?.patchValue('Sacramento');
     fixture.detectChanges();
@@ -296,21 +304,26 @@ describe('RestaurantComponent', () => {
       ],
       isPending: false,
     };
-    expect(fixture.componentInstance.restaurants).toEqual(expectedRestaurants);
+    expect(restaurantOutput).toEqual(expectedRestaurants);
   }));
 
   it('should show a loading div while isPending is true', () => {
     fixture.detectChanges();
-    fixture.componentInstance.restaurants.isPending = true;
+    const originalGetRestaurants = service.getRestaurants;
+    service.getRestaurants = () => of(restaurantAPIResponse).pipe(delay(100));
+    fixture.componentInstance.form.get('state')!.patchValue('CA');
+    fixture.componentInstance.form.get('city')!.patchValue('Sacramento');
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     const loadingDiv = compiled.querySelector('.loading');
     expect(loadingDiv).toBeTruthy();
+    service.getRestaurants = originalGetRestaurants;
   });
 
   it('should not show a loading div if isPending is false', () => {
     fixture.detectChanges();
-    fixture.componentInstance.restaurants.isPending = false;
+    fixture.componentInstance.form.get('state')!.patchValue('CA');
+    fixture.componentInstance.form.get('city')!.patchValue('Sacramento');
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     const loadingDiv = compiled.querySelector('.loading');
@@ -342,6 +355,12 @@ describe('RestaurantComponent', () => {
   it('should set states value to states response data and set isPending to false', fakeAsync((): void => {
     fixture.detectChanges();
     tick();
+
+    let stateOutput!: Data<State>;
+
+    fixture.componentInstance.states$.subscribe(
+      (states) => (stateOutput = states)
+    );
     fixture.detectChanges();
     const expectedStates = {
       value: [
@@ -351,7 +370,7 @@ describe('RestaurantComponent', () => {
       ],
       isPending: false,
     };
-    expect(fixture.componentInstance.states).toEqual(expectedStates);
+    expect(stateOutput).toEqual(expectedStates);
   }));
 
   it('should set state dropdown options to be values of states member', fakeAsync((): void => {
@@ -369,6 +388,12 @@ describe('RestaurantComponent', () => {
   it('should set cities value to cities response data and set isPending to false', fakeAsync((): void => {
     fixture.detectChanges();
     tick();
+
+    let cityOutput!: Data<City>;
+
+    fixture.componentInstance.cities$.subscribe(
+      (cities) => (cityOutput = cities)
+    );
     fixture.componentInstance.form.get('state')?.patchValue('CA');
     fixture.detectChanges();
     const expectedCities = {
@@ -378,7 +403,7 @@ describe('RestaurantComponent', () => {
       ],
       isPending: false,
     };
-    expect(fixture.componentInstance.cities).toEqual(expectedCities);
+    expect(cityOutput).toEqual(expectedCities);
   }));
 
   it('should set city dropdown options to be values of cities member when state value is selected', fakeAsync((): void => {
@@ -394,18 +419,14 @@ describe('RestaurantComponent', () => {
     expect(cityOption.value).toEqual('Sacramento');
   }));
 
-  it('state dropdown should be disabled until states are populated', fakeAsync((): void => {
-    const storeGetStatesFunc = fixture.componentInstance.getStates;
-    fixture.componentInstance.getStates = () => {}; // preventing getStates func from being called
-    fixture.detectChanges(); // detecting changes for createForm func to be called
-    const stateFormControl1 = fixture.componentInstance.form.get('state');
-    expect(stateFormControl1?.enabled).toBe(false);
-    fixture.componentInstance.getStates = storeGetStatesFunc;
-    fixture.componentInstance.getStates(); // calling getStates func when we want it
+  it('state dropdown should be disabled until states are populated', () => {
+    const stateFormControl = fixture.componentInstance.form.get('state')!;
+    expect(stateFormControl.enabled).toBe(false);
+
     fixture.detectChanges();
-    const stateFormControl2 = fixture.componentInstance.form.get('state');
-    expect(stateFormControl2?.enabled).toBe(true);
-  }));
+
+    expect(stateFormControl.enabled).toBe(true);
+  });
 
   it('city dropdown should be disabled until cities are populated', fakeAsync((): void => {
     fixture.detectChanges(); // detecting changes for createForm func to be called
@@ -419,13 +440,18 @@ describe('RestaurantComponent', () => {
 
   it('should reset list of restaurants when new state is selected', fakeAsync((): void => {
     fixture.detectChanges(); // detecting changes for createForm func to be called
+
+    let restaurantOutput!: Data<Restaurant>;
+    fixture.componentInstance.restaurants$.subscribe((restaurants) => {
+      restaurantOutput = restaurants;
+    });
     fixture.componentInstance.form.get('state')?.patchValue('CA');
     fixture.componentInstance.form.get('city')?.patchValue('Sacramento');
     fixture.detectChanges();
-    expect(fixture.componentInstance.restaurants.value.length).toEqual(2);
+    expect(restaurantOutput.value.length).toEqual(2);
     fixture.componentInstance.form.get('state')?.patchValue('MO');
     fixture.detectChanges();
-    expect(fixture.componentInstance.restaurants.value.length).toEqual(0);
+    expect(restaurantOutput.value.length).toEqual(0);
   }));
 
   it('should call getRestaurants method with two string params', fakeAsync((): void => {
