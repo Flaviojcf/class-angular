@@ -13,6 +13,8 @@ import { RestaurantComponent } from './components/restaurant/restaurant.componen
 import { ImageUrlPipe } from './pipes/image-url.pipe';
 import { MenuItemsComponent } from './components/order/menu-items/menu-items.component';
 import { OnlyNumbersDirective } from './directives/only-numbers.directive';
+import { HistoryComponent } from './components/order/history/history.component';
+import { ListComponent } from './components/order/list/list.component';
 
 
 @NgModule({
@@ -24,7 +26,9 @@ import { OnlyNumbersDirective } from './directives/only-numbers.directive';
     DetailComponent,
     OrderComponent,
     MenuItemsComponent,
-    OnlyNumbersDirective
+    OnlyNumbersDirective,
+    HistoryComponent,
+    ListComponent
   ],
   imports: [
     BrowserModule,

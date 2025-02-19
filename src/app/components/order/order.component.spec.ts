@@ -1,12 +1,15 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
+
 import { MenuItemsComponent } from './menu-items/menu-items.component';
-import { OrderComponent } from './order.component';
+import { OrderComponent, OrderForm } from './order.component';
+import { CreateOrderDto, OrderService } from '../../services/order/order.service';
 import { RestaurantService } from '../../services/restaurant/restaurant.service';
+
 
 class MockRestaurantService {
   getRestaurant(slug: string) {
@@ -59,6 +62,23 @@ class MockRestaurantService {
   }
 }
 
+class MockOrderService {
+  createOrder(order: CreateOrderDto) {
+    return of({
+      address: null,
+      items: [
+        { name: 'Onion fries', price: 15.99 },
+        { name: 'Roasted Salmon', price: 23.99 },
+      ],
+      name: 'Jennifer Hungry',
+      phone: null,
+      restaurant: 'uPkA2jiZi24tCvXh',
+      status: 'preparing',
+      _id: '0awcHyo3iD6CpvhX',
+    });
+  }
+}
+
 const MockActivatedRoute = {
   snapshot: {
     paramMap: {
@@ -72,6 +92,7 @@ const MockActivatedRoute = {
 describe('OrderComponent', () => {
   let component: OrderComponent;
   let fixture: ComponentFixture<OrderComponent>;
+  let orderService: OrderService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -86,9 +107,14 @@ describe('OrderComponent', () => {
           provide: ActivatedRoute,
           useValue: MockActivatedRoute,
         },
+        {
+          provide: OrderService,
+          useClass: MockOrderService,
+        },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
+    orderService = TestBed.inject(OrderService);
   });
 
   beforeEach(() => {
@@ -196,5 +222,84 @@ describe('OrderComponent', () => {
     fixture.detectChanges();
     const orderText = compiled.querySelector('.submit h4');
     expect(orderText?.textContent).toEqual('Total: $57.98');
+  });
+
+  it('should call the orderService createOrder on form submit with form values', () => {
+    const createOrderSpy = spyOn(orderService, 'createOrder').and.callThrough();
+    const expectedOrderValue: ReturnType<FormGroup<OrderForm>['getRawValue']> =
+      {
+        restaurant: '12345',
+        name: 'Jennifer Hungry',
+        address: '123 Main St',
+        phone: '555-555-5555',
+        items: [
+          { name: 'Onion fries', price: 15.99 },
+          { name: 'Roasted Salmon', price: 23.99 },
+        ],
+      };
+    const compiled = fixture.nativeElement as HTMLElement;
+    fixture.componentInstance.orderForm?.setValue(expectedOrderValue);
+    fixture.detectChanges();
+    (
+      compiled.querySelector('button[type="submit"]') as HTMLButtonElement
+    ).click();
+    expect(createOrderSpy).toHaveBeenCalledWith(expectedOrderValue);
+  });
+
+  it('should show completed order when order is complete', () => {
+    const expectedOrderValue: ReturnType<FormGroup<OrderForm>['getRawValue']> =
+      {
+        restaurant: '12345',
+        name: 'Jennifer Hungry',
+        address: '123 Main St',
+        phone: '555-555-5555',
+        items: [
+          { name: 'Onion fries', price: 15.99 },
+          { name: 'Roasted Salmon', price: 23.99 },
+        ],
+      };
+    const compiled = fixture.nativeElement as HTMLElement;
+    fixture.componentInstance.orderForm?.setValue(expectedOrderValue);
+    fixture.detectChanges();
+    (
+      compiled.querySelector('button[type="submit"]') as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    const displayedOrder = compiled.querySelector('h3');
+    expect(displayedOrder?.textContent).toEqual(
+      'Thanks for your order Jennifer Hungry!'
+    );
+  });
+
+  it('should clear the form values when create new order is clicked', () => {
+    const expectedOrderValue: ReturnType<FormGroup<OrderForm>['getRawValue']> =
+      {
+        restaurant: '12345',
+        name: 'Jennifer Hungry',
+        address: '123 Main St',
+        phone: '555-555-5555',
+        items: [
+          { name: 'Onion fries', price: 15.99 },
+          { name: 'Roasted Salmon', price: 23.99 },
+        ],
+      };
+    const compiled = fixture.nativeElement as HTMLElement;
+    fixture.componentInstance.orderForm?.setValue(expectedOrderValue);
+    fixture.detectChanges();
+    (
+      compiled.querySelector('button[type="submit"]') as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    (
+      compiled.querySelector('button:nth-child(1)') as HTMLButtonElement
+    ).click();
+    const emptyform = {
+      restaurant: '3ZOZyTY1LH26LnVw',
+      name: '',
+      address: '',
+      phone: '',
+      items: [],
+    };
+    expect(fixture.componentInstance.orderForm?.value).toEqual(emptyform);
   });
 });

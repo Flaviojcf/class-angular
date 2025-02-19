@@ -19,7 +19,7 @@ import { DetailComponent } from './components/restaurant/detail/detail.component
 import { RestaurantComponent } from './components/restaurant/restaurant.component';
 import { ImageUrlPipe } from './pipes/image-url.pipe';
 import { RestaurantService } from './services/restaurant/restaurant.service';
-
+import { HistoryComponent } from './components/order/history/history.component';
 
 class MockRestaurantService {
   getRestaurants() {
@@ -207,6 +207,7 @@ describe('AppComponent', () => {
         ImageUrlPipe,
         DetailComponent,
         OrderComponent,
+        HistoryComponent,
       ],
       providers: [
         { provide: RestaurantService, useClass: MockRestaurantService },
@@ -274,6 +275,15 @@ describe('AppComponent', () => {
     router.navigate(['restaurants/crab-shack/order']).then(() => {
       expect(location.path()).toBe('/restaurants/crab-shack/order');
       expect(compiled.querySelector('pmo-order')).not.toBe(null);
+    });
+  }));
+
+  it('should render the HistoryComponent with router navigates to "/order-history" path', fakeAsync(() => {
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    router.navigate(['order-history']).then(() => {
+      expect(location.path()).toBe('/order-history');
+      expect(compiled.querySelector('pmo-history')).not.toBe(null);
     });
   }));
 

@@ -13,6 +13,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Restaurant } from '../../interfaces/restaurant/restaurant';
+import { Order, OrderService } from '../../services/order/order.service';
 import { RestaurantService } from '../../services/restaurant/restaurant.service';
 
 export interface Item {
@@ -50,7 +51,7 @@ export class OrderComponent implements OnInit, OnDestroy {
   restaurant?: Restaurant;
   isLoading = true;
   orderTotal = 0.0;
-  completedOrder: any;
+  completedOrder?: Order;
   orderComplete = false;
   orderProcessing = false;
   private onDestroy$ = new Subject<void>();
@@ -58,6 +59,7 @@ export class OrderComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private restaurantService: RestaurantService,
+    private orderService: OrderService,
   ) {}
 
   ngOnInit(): void {
@@ -93,19 +95,8 @@ export class OrderComponent implements OnInit, OnDestroy {
     this.onChanges();
   }
 
-  getChange(item: Item): void {
-    if (!this.orderForm) {
-      return;
-    }
-    const items = this.orderForm.controls.items.value;
-    const index = items.indexOf(item);
-    if (index > -1) {
-      items.splice(index, 1);
-    } else {
-      items.push(item);
-    }
-
-    this.orderForm.controls.items.setValue(items);
+  getChange(newItems: Item[]): void {
+    this.orderForm?.controls.items.patchValue(newItems);
   }
 
   onChanges(): void {
@@ -127,11 +118,26 @@ export class OrderComponent implements OnInit, OnDestroy {
     }
   }
 
-  onSubmit(): void {}
+  onSubmit(): void {
+    if (!this.orderForm?.valid) {
+      return;
+    }
+
+    this.orderProcessing = true;
+    this.orderService
+      .createOrder(this.orderForm.getRawValue())
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe((res: Order) => {
+        this.completedOrder = res;
+        this.orderComplete = true;
+        this.orderProcessing = false;
+      });
+  }
 
   startNewOrder(): void {
     this.orderComplete = false;
     this.completedOrder = undefined;
+    this.orderTotal = 0.0;
     // CLEAR THE ORDER FORM
     this.createOrderForm();
   }
