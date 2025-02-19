@@ -12,6 +12,7 @@ import { DetailComponent } from './components/restaurant/detail/detail.component
 import { RestaurantComponent } from './components/restaurant/restaurant.component';
 import { ImageUrlPipe } from './pipes/image-url.pipe';
 import { MenuItemsComponent } from './components/order/menu-items/menu-items.component';
+import { OnlyNumbersDirective } from './directives/only-numbers.directive';
 
 
 @NgModule({
@@ -22,7 +23,8 @@ import { MenuItemsComponent } from './components/order/menu-items/menu-items.com
     ImageUrlPipe,
     DetailComponent,
     OrderComponent,
-    MenuItemsComponent
+    MenuItemsComponent,
+    OnlyNumbersDirective
   ],
   imports: [
     BrowserModule,
