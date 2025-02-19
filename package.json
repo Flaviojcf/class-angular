@@ -19,6 +19,8 @@
     "@angular/platform-browser": "^19.1.0",
     "@angular/platform-browser-dynamic": "^19.1.0",
     "@angular/router": "^19.1.0",
+    "bootstrap": "^5.2.3",
+    "ngx-bootstrap": "^19.0.2",
     "place-my-order-api": "^1.7.0",
     "place-my-order-assets": "^0.2.2",
     "rxjs": "~7.8.0",

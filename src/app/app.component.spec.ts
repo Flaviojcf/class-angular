@@ -14,10 +14,12 @@ import { of } from 'rxjs';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
-import { RestaurantComponent } from './components/restaurant/restaurant.component';
+import { OrderComponent } from './components/order/order.component';
 import { DetailComponent } from './components/restaurant/detail/detail.component';
+import { RestaurantComponent } from './components/restaurant/restaurant.component';
 import { ImageUrlPipe } from './pipes/image-url.pipe';
 import { RestaurantService } from './services/restaurant/restaurant.service';
+
 
 class MockRestaurantService {
   getRestaurants() {
@@ -204,6 +206,7 @@ describe('AppComponent', () => {
         RestaurantComponent,
         ImageUrlPipe,
         DetailComponent,
+        OrderComponent,
       ],
       providers: [
         { provide: RestaurantService, useClass: MockRestaurantService },
@@ -262,6 +265,15 @@ describe('AppComponent', () => {
     router.navigate(['restaurants/crab-shack']).then(() => {
       expect(location.path()).toBe('/restaurants/crab-shack');
       expect(compiled.querySelector('pmo-detail')).not.toBe(null);
+    });
+  }));
+
+  it('should render the OrderComponent with router navigates to "/restaurants/slug/order" path', fakeAsync(() => {
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    router.navigate(['restaurants/crab-shack/order']).then(() => {
+      expect(location.path()).toBe('/restaurants/crab-shack/order');
+      expect(compiled.querySelector('pmo-order')).not.toBe(null);
     });
   }));
 
