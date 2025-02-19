@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
 import { Restaurant } from '../../interfaces/restaurant/restaurant';
 
+
 export interface ResponseData<DataType> {
   data: DataType[];
 }
@@ -49,6 +50,12 @@ export class RestaurantService {
     return this.httpClient.get<ResponseData<City>>(
       environment.apiUrl + '/cities',
       { params }
+    );
+  }
+
+  getRestaurant(slug: string): Observable<Restaurant> {
+    return this.httpClient.get<Restaurant>(
+      environment.apiUrl + '/restaurants/' + slug
     );
   }
 }
