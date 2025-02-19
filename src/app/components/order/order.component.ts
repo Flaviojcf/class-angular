@@ -13,8 +13,10 @@ import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Restaurant } from '../../interfaces/restaurant/restaurant';
+import { ItemTotalPipe } from '../../pipes/item-total.pipe';
 import { Order, OrderService } from '../../services/order/order.service';
 import { RestaurantService } from '../../services/restaurant/restaurant.service';
+
 
 export interface Item {
   name: string;
@@ -60,6 +62,7 @@ export class OrderComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private restaurantService: RestaurantService,
     private orderService: OrderService,
+    private itemTotal: ItemTotalPipe
   ) {}
 
   ngOnInit(): void {
@@ -103,19 +106,9 @@ export class OrderComponent implements OnInit, OnDestroy {
     // WHEN THE ITEMS CHANGE WE WANT TO CALCULATE A NEW TOTAL
     this.orderForm?.controls.items.valueChanges
       .pipe(takeUntil(this.onDestroy$))
-      .subscribe((value) => this.calculateTotal(value));
-  }
-
-  calculateTotal(items: Item[]): void {
-    let total = 0.0;
-    if (items.length) {
-      for (const item of items) {
-        total += item.price;
-      }
-      this.orderTotal = Math.round(total * 100) / 100;
-    } else {
-      this.orderTotal = total;
-    }
+      .subscribe((value) => {
+        this.orderTotal = this.itemTotal.transform(value);
+      });
   }
 
   onSubmit(): void {

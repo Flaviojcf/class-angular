@@ -15,6 +15,8 @@ import { MenuItemsComponent } from './components/order/menu-items/menu-items.com
 import { OnlyNumbersDirective } from './directives/only-numbers.directive';
 import { HistoryComponent } from './components/order/history/history.component';
 import { ListComponent } from './components/order/list/list.component';
+import { ItemTotalPipe } from './pipes/item-total.pipe';
+import { DEFAULT_CURRENCY_CODE } from '@angular/core';
 
 
 @NgModule({
@@ -28,7 +30,8 @@ import { ListComponent } from './components/order/list/list.component';
     MenuItemsComponent,
     OnlyNumbersDirective,
     HistoryComponent,
-    ListComponent
+    ListComponent,
+    ItemTotalPipe
   ],
   imports: [
     BrowserModule,
@@ -36,9 +39,12 @@ import { ListComponent } from './components/order/list/list.component';
     HttpClientModule,
     ReactiveFormsModule,
     BrowserAnimationsModule,
-    TabsModule.forRoot()
-  ],
-  providers: [],
+    TabsModule.forRoot(),
+],
+providers: [
+  ItemTotalPipe,
+  { provide: DEFAULT_CURRENCY_CODE, useValue: 'USD' },
+],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

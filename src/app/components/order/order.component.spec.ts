@@ -4,11 +4,11 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
-
-import { MenuItemsComponent } from './menu-items/menu-items.component';
-import { OrderComponent, OrderForm } from './order.component';
+import { ItemTotalPipe } from '../../pipes/item-total.pipe';
 import { CreateOrderDto, OrderService } from '../../services/order/order.service';
 import { RestaurantService } from '../../services/restaurant/restaurant.service';
+import { MenuItemsComponent } from './menu-items/menu-items.component';
+import { OrderComponent, OrderForm } from './order.component';
 
 
 class MockRestaurantService {
@@ -111,6 +111,7 @@ describe('OrderComponent', () => {
           provide: OrderService,
           useClass: MockOrderService,
         },
+        ItemTotalPipe,
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();

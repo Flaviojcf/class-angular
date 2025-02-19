@@ -3,6 +3,7 @@ import { of } from 'rxjs';
 
 import { ListComponent } from './list.component';
 import { Order, OrderService } from '../../../services/order/order.service';
+import { ItemTotalPipe } from '../../../pipes/item-total.pipe';
 
 class MockOrderService {
   updateOrder(order: Order, status: string) {
@@ -21,12 +22,13 @@ describe('ListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ListComponent],
+      declarations: [ListComponent, ItemTotalPipe],
       providers: [
         {
           provide: OrderService,
           useClass: MockOrderService,
         },
+        ItemTotalPipe,
       ],
     }).compileComponents();
     injectedOrderService = TestBed.inject(OrderService);

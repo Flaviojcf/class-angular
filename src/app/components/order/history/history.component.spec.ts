@@ -5,6 +5,7 @@ import { ListComponent } from '../list/list.component';
 
 import { HistoryComponent } from './history.component';
 import { Order, OrderService } from '../../../services/order/order.service';
+import { ItemTotalPipe } from '../../../pipes/item-total.pipe';
 
 class MockOrderService {
   getOrders(): Observable<{ data: Order[] }> {
@@ -68,12 +69,13 @@ describe('HistoryComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [HistoryComponent, ListComponent],
+      declarations: [HistoryComponent, ListComponent, ItemTotalPipe],
       providers: [
         {
           provide: OrderService,
           useClass: MockOrderService,
         },
+        ItemTotalPipe,
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();

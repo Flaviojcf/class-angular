@@ -20,6 +20,7 @@ import { RestaurantComponent } from './components/restaurant/restaurant.componen
 import { ImageUrlPipe } from './pipes/image-url.pipe';
 import { RestaurantService } from './services/restaurant/restaurant.service';
 import { HistoryComponent } from './components/order/history/history.component';
+import { ItemTotalPipe } from './pipes/item-total.pipe';
 
 class MockRestaurantService {
   getRestaurants() {
@@ -208,9 +209,11 @@ describe('AppComponent', () => {
         DetailComponent,
         OrderComponent,
         HistoryComponent,
+        ItemTotalPipe,
       ],
       providers: [
         { provide: RestaurantService, useClass: MockRestaurantService },
+        ItemTotalPipe,
       ],
       schemas: [NO_ERRORS_SCHEMA],
     })
